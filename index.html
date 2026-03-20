@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enshrined | Fair Mint 4217</title>
+    <title>Tempo CLAW | Fair Mint Tempo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:italic,wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
     <style>
         body { background-color: #0c0c0c; color: #e5e5e0; font-family: 'Inter', sans-serif; }
         .serif { font-family: 'Libre Baskerville', serif; }
@@ -21,7 +20,7 @@
 <body class="min-h-screen antialiased">
 
     <nav class="max-w-6xl mx-auto px-8 py-8 flex justify-between items-center">
-        <div class="serif text-2xl italic tracking-[0.2em] text-[#d4af37]">enshrined</div>
+        <div class="serif text-2xl italic tracking-[0.2em] text-[#d4af37]">Tempo CLAW</div>
         <button id="connectBtn" class="bg-zinc-900 border border-zinc-800 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-zinc-800 transition">
             Connect Wallet
         </button>
@@ -29,18 +28,18 @@
 
     <main class="max-w-xl mx-auto px-4 pt-10 pb-24 text-center">
         <h1 class="serif text-6xl mb-4 italic tracking-tight">enshrined</h1>
-        <p class="text-[10px] opacity-40 mb-10 tracking-[0.3em] uppercase italic">1 pathUSD = 1,000 $ENSH. Max 50 per tx.</p>
+        <p class="text-[10px] opacity-40 mb-10 tracking-[0.3em] uppercase italic">1 pathUSD = 1,000 $TPC Max 50 per tx.</p>
 
         <div class="card-bg rounded-[2.5rem] p-8 gold-glow relative overflow-hidden">
             
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
                     <p class="text-3xl font-bold text-white">$1</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">1,000 ENSH</p>
+                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">1,000 TPC</p>
                 </div>
                 <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card opacity-30 cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
                     <p class="text-3xl font-bold text-white">$5</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">5,000 ENSH</p>
+                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">5,000 TPC</p>
                 </div>
             </div>
 
@@ -72,28 +71,28 @@
                     <p class="font-medium text-white">1,000</p>
                 </div>
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Mints</p>
-                    <p class="font-medium text-white">10,404</p>
+                    <p class="opacity-30 uppercase mb-1">Minted</p>
+                    <p id="totalDistributed" class="font-medium text-white">Loading...</p>
                 </div>
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Cap</p>
+                    <p class="opacity-30 uppercase mb-1">Total Cap</p>
                     <p class="font-medium text-white">60M</p>
                 </div>
             </div>
 
             <div class="text-left">
                 <div class="flex justify-between text-[9px] opacity-40 mb-3 uppercase tracking-widest">
-                    <span>Allocation Remaining</span>
-                    <span class="text-[#d4af37]">69.0% Minted</span>
+                    <span id="remainingText">Remaining: Loading...</span>
+                    <span id="progressPercent" class="text-[#d4af37]">0%</span>
                 </div>
                 <div class="progress-bar rounded-full">
-                    <div class="progress-fill" style="width: 69%;"></div>
+                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
                 </div>
             </div>
         </div>
 
         <div id="status" class="mt-6 text-[10px] opacity-30 uppercase tracking-widest leading-loose">
-            Connect wallet on Network 4217 to proceed
+            Connect wallet on Network Tempo to proceed
         </div>
     </main>
 
@@ -101,21 +100,56 @@
         const CONFIG = {
             chainId: '0x1079', // 4217
             rpc: 'https://tempo-mainnet.drpc.org',
-            enshAddr: '0x07f8...2C02', // ALAMAT KONTRAK ENSH ANDA
-            pathAddr: '0x...',       // ALAMAT KONTRAK pathUSD (ERC20)
+            enshAddr: '0x2CCD6B991ba3e29fC890eaAaf2326ea0d8AfdC70',
+            pathAddr: '0x20c0000000000000000000000000000000000000',
             abi: [
                 "function mint(uint256 amountInUSD) external",
-                "function approve(address spender, uint256 amount) external returns (bool)"
-            ]
+                "function approve(address spender, uint256 amount) external returns (bool)",
+                "function totalMinted() external view returns (uint256)" // Fungsi untuk baca data
+            ],
+            mintCap: 60000000 // 60 Juta
         };
 
         let signer = null;
         let currentAmount = 1;
 
+        // Elements
         const connectBtn = document.getElementById('connectBtn');
         const mintBtn = document.getElementById('mintBtn');
         const statusText = document.getElementById('status');
         const displayUSD = document.getElementById('displayUSD');
+        const totalDistributedEl = document.getElementById('totalDistributed');
+        const remainingTextEl = document.getElementById('remainingText');
+        const progressPercentEl = document.getElementById('progressPercent');
+        const progressBarEl = document.getElementById('progressBar');
+
+        // Logic Update Stats dari Blockchain
+        async function updateLiveStats() {
+            try {
+                const readProvider = new ethers.JsonRpcProvider(CONFIG.rpc);
+                const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, readProvider);
+                
+                // Ambil totalMinted dari kontrak
+                const rawMinted = await contract.totalMinted();
+                const minted = Number(ethers.formatEther(rawMinted));
+                
+                const remaining = CONFIG.mintCap - minted;
+                const percent = (minted / CONFIG.mintCap) * 100;
+
+                // Update UI
+                totalDistributedEl.innerText = (minted / 1000000).toFixed(2) + "M";
+                remainingTextEl.innerText = "Remaining: " + remaining.toLocaleString() + " ENSH";
+                progressPercentEl.innerText = percent.toFixed(2) + "% Minted";
+                progressBarEl.style.width = percent.toFixed(2) + "%";
+            } catch (err) {
+                console.error("Gagal update stats:", err);
+            }
+        }
+
+        // Jalankan update saat halaman dibuka
+        updateLiveStats();
+        // Update otomatis setiap 30 detik
+        setInterval(updateLiveStats, 30000);
 
         function selectPkg(num, id) {
             currentAmount = num;
@@ -140,7 +174,7 @@
             signer = await provider.getSigner();
             
             const network = await provider.getNetwork();
-            if (network.chainId !== BigInt(4217)) {
+            if (Number(network.chainId) !== 4217) {
                 try {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
@@ -167,13 +201,10 @@
                 mintBtn.innerText = "Approving pathUSD...";
                 
                 const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
-                
-                // STEP 1: APPROVE (Wajib agar kontrak bisa narik pathUSD)
                 const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
                 const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
                 await appTx.wait();
                 
-                // STEP 2: MINT
                 mintBtn.innerText = "Executing Mint...";
                 const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
                 const mintTx = await enshContract.mint(amountWei);
@@ -182,6 +213,7 @@
 
                 alert("Successfully minted " + (currentAmount * 1000) + " ENSH!");
                 statusText.innerText = "Success!";
+                updateLiveStats(); // Update stats setelah mint berhasil
             } catch (err) {
                 console.error(err);
                 alert("Error: " + (err.reason || "Transaction rejected"));
