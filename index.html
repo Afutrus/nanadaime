@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enshrined | Fair Mint</title>
+    <title>Enshrined | Fair Mint 4217</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:italic,wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -15,72 +15,76 @@
         .gold-glow { box-shadow: 0 0 40px rgba(212, 175, 55, 0.05); }
         .progress-bar { height: 2px; background: #1a1a1a; overflow: hidden; }
         .progress-fill { height: 100%; background: #d4af37; box-shadow: 0 0 10px #d4af37; transition: width 1s ease-in-out; }
+        .pkg-active { border-color: #d4af37 !important; opacity: 1 !important; background: rgba(24, 24, 27, 0.8) !important; }
     </style>
 </head>
 <body class="min-h-screen antialiased">
 
     <nav class="max-w-6xl mx-auto px-8 py-8 flex justify-between items-center">
         <div class="serif text-2xl italic tracking-[0.2em] text-[#d4af37]">enshrined</div>
-        <div class="flex items-center gap-6">
-            <a href="skill.md" class="text-[10px] uppercase tracking-widest opacity-40 hover:opacity-100 transition">skill.md</a>
-            <button id="connectBtn" class="bg-zinc-900 border border-zinc-800 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-zinc-800 transition">
-                Connect Wallet
-            </button>
-        </div>
+        <button id="connectBtn" class="bg-zinc-900 border border-zinc-800 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-zinc-800 transition">
+            Connect Wallet
+        </button>
     </nav>
 
-    <main class="max-w-xl mx-auto px-4 pt-16 pb-24 text-center">
+    <main class="max-w-xl mx-auto px-4 pt-10 pb-24 text-center">
         <h1 class="serif text-6xl mb-4 italic tracking-tight">enshrined</h1>
-        <p class="text-[10px] opacity-40 mb-14 tracking-[0.3em] uppercase italic">Fair mint. Fixed supply. On-chain on Tempo.</p>
+        <p class="text-[10px] opacity-40 mb-10 tracking-[0.3em] uppercase italic">1 pathUSD = 1,000 $ENSH. Max 50 per tx.</p>
 
         <div class="card-bg rounded-[2.5rem] p-8 gold-glow relative overflow-hidden">
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div class="bg-zinc-900/50 border-2 border-[#d4af37] p-6 rounded-2xl text-left">
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
                     <p class="text-3xl font-bold text-white">$1</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">$1 → 720 ENSH</p>
+                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">1,000 ENSH</p>
                 </div>
-                <div class="bg-zinc-900/20 border border-white/5 p-6 rounded-2xl text-left opacity-30">
+                <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card opacity-30 cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
                     <p class="text-3xl font-bold text-white">$5</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">$5 → 3,600 ENSH</p>
+                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">5,000 ENSH</p>
                 </div>
             </div>
 
-            <div class="bg-black/40 border border-white/5 rounded-2xl py-12 mb-8">
-                <div class="flex justify-center items-center gap-6">
-                    <span class="text-3xl font-light">1 pathUSD</span>
-                    <span class="text-zinc-800 text-4xl">→</span>
-                    <span class="text-3xl font-light">720 ENSH</span>
-                </div>
-                <p class="text-[8px] mt-4 opacity-20 tracking-[0.4em] uppercase font-bold">direct on-chain mint</p>
+            <div class="mb-6">
+                <input type="number" id="customAmount" placeholder="Or enter custom amount (Max 50)" 
+                    class="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-center outline-none focus:border-[#d4af37] transition text-sm"
+                    oninput="handleCustomInput(this.value)">
             </div>
 
-            <button id="mintBtn" class="w-full bg-[#e5e5e0] hover:bg-white text-black font-bold py-5 rounded-2xl uppercase tracking-[0.2em] text-[11px] mb-8 transition-all active:scale-[0.98] shadow-lg">
+            <div class="bg-black/20 border border-white/5 rounded-2xl py-8 mb-8">
+                <p class="text-[10px] opacity-30 uppercase mb-2 tracking-widest">You will pay</p>
+                <div class="flex justify-center items-center gap-4">
+                    <span id="displayUSD" class="text-3xl font-light">1</span>
+                    <span class="text-zinc-700 text-2xl">pathUSD</span>
+                </div>
+            </div>
+
+            <button id="mintBtn" class="w-full bg-[#e5e5e0] hover:bg-white text-black font-bold py-5 rounded-2xl uppercase tracking-[0.2em] text-[11px] mb-8 transition-all active:scale-[0.98]">
                 Execute Mint
             </button>
 
-            <div class="grid grid-cols-4 gap-2 mb-10">
+            <div class="grid grid-cols-4 gap-2 mb-10 text-[10px]">
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="text-[7px] opacity-30 uppercase mb-1">Price</p>
-                    <p class="text-xs font-medium text-white">$1</p>
+                    <p class="opacity-30 uppercase mb-1">Price</p>
+                    <p class="font-medium text-white">$1</p>
                 </div>
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="text-[7px] opacity-30 uppercase mb-1">Per Mint</p>
-                    <p class="text-xs font-medium text-white">720</p>
+                    <p class="opacity-30 uppercase mb-1">Tokens/USD</p>
+                    <p class="font-medium text-white">1,000</p>
                 </div>
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="text-[7px] opacity-30 uppercase mb-1">Total Mints</p>
-                    <p id="totalMints" class="text-xs font-medium text-white">10,404</p>
+                    <p class="opacity-30 uppercase mb-1">Mints</p>
+                    <p class="font-medium text-white">10,404</p>
                 </div>
                 <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="text-[7px] opacity-30 uppercase mb-1">Distributed</p>
-                    <p id="distributed" class="text-xs font-medium text-white">41.4M</p>
+                    <p class="opacity-30 uppercase mb-1">Cap</p>
+                    <p class="font-medium text-white">60M</p>
                 </div>
             </div>
 
             <div class="text-left">
-                <div class="flex justify-between text-[9px] opacity-40 mb-3 uppercase tracking-[0.1em]">
-                    <span>Remaining: 18,589,440 ENSH</span>
-                    <span class="text-[#d4af37]">69.0%</span>
+                <div class="flex justify-between text-[9px] opacity-40 mb-3 uppercase tracking-widest">
+                    <span>Allocation Remaining</span>
+                    <span class="text-[#d4af37]">69.0% Minted</span>
                 </div>
                 <div class="progress-bar rounded-full">
                     <div class="progress-fill" style="width: 69%;"></div>
@@ -88,90 +92,102 @@
             </div>
         </div>
 
-        <div id="status" class="mt-6 text-[10px] opacity-30 uppercase tracking-widest">Connect wallet to start</div>
+        <div id="status" class="mt-6 text-[10px] opacity-30 uppercase tracking-widest leading-loose">
+            Connect wallet on Network 4217 to proceed
+        </div>
     </main>
 
     <script>
-        // CONFIGURATION
         const CONFIG = {
-            chainId: '0x1079', // 1000001
-            chainName: 'Tempo Mainnet',
+            chainId: '0x1079', // 4217
             rpc: 'https://tempo-mainnet.drpc.org',
-            enshAddress: '0x07f8...2C02', // Masukkan alamat kontrak ENSH Anda
-            pathUSDAddress: '0x...',       // Masukkan alamat pathUSD Anda
-            abi: ["function mint(uint256 amount) external"]
+            enshAddr: '0x07f8...2C02', // ALAMAT KONTRAK ENSH ANDA
+            pathAddr: '0x...',       // ALAMAT KONTRAK pathUSD (ERC20)
+            abi: [
+                "function mint(uint256 amountInUSD) external",
+                "function approve(address spender, uint256 amount) external returns (bool)"
+            ]
         };
 
         let signer = null;
-        let provider = null;
+        let currentAmount = 1;
 
         const connectBtn = document.getElementById('connectBtn');
         const mintBtn = document.getElementById('mintBtn');
         const statusText = document.getElementById('status');
+        const displayUSD = document.getElementById('displayUSD');
 
-        async function updateUI(address) {
-            connectBtn.innerText = address.slice(0,6) + "..." + address.slice(-4);
-            connectBtn.classList.replace('bg-zinc-900', 'bg-[#d4af37]');
-            connectBtn.classList.replace('text-white', 'text-black');
-            statusText.innerText = "Wallet: " + address + " | Network: Tempo";
+        function selectPkg(num, id) {
+            currentAmount = num;
+            document.querySelectorAll('.package-card').forEach(el => el.classList.remove('pkg-active'));
+            document.getElementById(id).classList.add('pkg-active');
+            document.getElementById('customAmount').value = '';
+            displayUSD.innerText = currentAmount;
+        }
+
+        function handleCustomInput(val) {
+            let num = parseInt(val) || 0;
+            if (num > 50) num = 50;
+            currentAmount = num;
+            displayUSD.innerText = currentAmount;
+            document.querySelectorAll('.package-card').forEach(el => el.classList.remove('pkg-active'));
         }
 
         async function connect() {
-            if (!window.ethereum) return alert("Please install MetaMask!");
+            if (!window.ethereum) return alert("Install MetaMask");
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const accounts = await provider.send("eth_requestAccounts", []);
+            signer = await provider.getSigner();
             
-            try {
-                provider = new ethers.BrowserProvider(window.ethereum);
-                const accounts = await provider.send("eth_requestAccounts", []);
-                signer = await provider.getSigner();
-                
-                // Check Network
-                const network = await provider.getNetwork();
-                if (network.chainId !== BigInt(4217)) {
-                    statusText.innerText = "Switching to Tempo...";
+            const network = await provider.getNetwork();
+            if (network.chainId !== BigInt(4217)) {
+                try {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
                         params: [{
                             chainId: CONFIG.chainId,
-                            chainName: CONFIG.chainName,
-                            nativeCurrency: { name: 'Tempo', symbol: 'pathUSD', decimals: 18 },
+                            chainName: 'Tempo Mainnet',
+                            nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 18 },
                             rpcUrls: [CONFIG.rpc],
                             blockExplorerUrls: ['https://explore.tempo.xyz/']
                         }]
                     });
-                }
-                
-                updateUI(accounts[0]);
-            } catch (err) {
-                console.error(err);
-                statusText.innerText = "Connection failed";
+                } catch (e) { alert("Please switch to Network 4217 manualy"); }
             }
+            connectBtn.innerText = accounts[0].slice(0,6)+"..."+accounts[0].slice(-4);
+            statusText.innerText = "Ready to mint on Chain 4217";
         }
 
         async function mint() {
             if (!signer) return connect();
-            
-            try {
-                mintBtn.innerText = "Processing...";
-                mintBtn.disabled = true;
+            if (currentAmount <= 0) return alert("Enter amount");
 
-                const contract = new ethers.Contract(CONFIG.enshAddress, CONFIG.abi, signer);
+            try {
+                mintBtn.disabled = true;
+                mintBtn.innerText = "Approving pathUSD...";
                 
-                // 1 pathUSD = 10^18 (Standard 18 decimals)
-                const amount = ethers.parseEther("1.0");
+                const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
                 
-                const tx = await contract.mint(amount);
-                statusText.innerText = "Transaction Sent! Waiting for block...";
+                // STEP 1: APPROVE (Wajib agar kontrak bisa narik pathUSD)
+                const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
+                const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
+                await appTx.wait();
                 
-                await tx.wait();
-                statusText.innerText = "Mint Successful!";
-                alert("Mint Successful!");
+                // STEP 2: MINT
+                mintBtn.innerText = "Executing Mint...";
+                const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+                const mintTx = await enshContract.mint(amountWei);
+                statusText.innerText = "Waiting for confirmation...";
+                await mintTx.wait();
+
+                alert("Successfully minted " + (currentAmount * 1000) + " ENSH!");
+                statusText.innerText = "Success!";
             } catch (err) {
                 console.error(err);
-                alert("Error: " + (err.reason || err.message));
-                statusText.innerText = "Transaction failed";
+                alert("Error: " + (err.reason || "Transaction rejected"));
             } finally {
-                mintBtn.innerText = "Execute Mint";
                 mintBtn.disabled = false;
+                mintBtn.innerText = "Execute Mint";
             }
         }
 
