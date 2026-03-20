@@ -150,15 +150,16 @@
         rpc: 'https://tempo-mainnet.drpc.org',
         enshAddr: '0xfA4B61D38Ec0ca038283D2fE701E5890ba42C982',
         pathAddr: '0x20c0000000000000000000000000000000000000',
-        abi: [
-            "function mint(uint256 amountInUSD) external",
-            "function approve(address spender, uint256 amount) external", // Disederhanakan
-            "function totalMinted() external view returns (uint256)",
-            "function allowance(address owner, address spender) external view returns (uint256)",
-            "event Transfer(address indexed from, address indexed to, uint256 value)"
-        ],
-        mintCap: 60000000
-    };
+    abi: [
+        "function mint(uint256 amountInUSD) external",
+        "function approve(address spender, uint256 amount) external",
+        "function totalMinted() external view returns (uint256)",
+        "function allowance(address owner, address spender) external view returns (uint256)",
+        "function decimals() external view returns (uint8)",
+        "event Transfer(address indexed from, address indexed to, uint256 value)"
+    ],
+    mintCap: 60000000
+};
 
     let signer = null;
     let currentAmount = 1;
@@ -194,10 +195,10 @@
             const rawMinted = await contract.totalMinted();
             const minted = Number(ethers.formatUnits(rawMinted, 6));
             const percent = (minted / CONFIG.mintCap) * 100;
-            document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
+            document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPCLAW";
             document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
             document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
-            document.getElementById('remainingText').innerText = "AVAIL: " + (CONFIG.mintCap - minted).toLocaleString() + " TPC";
+            document.getElementById('remainingText').innerText = "AVAIL: " + (CONFIG.mintCap - minted).toLocaleString() + " TPCLAW";
         } catch (err) { console.error("Stats Fetch Error"); }
     }
 
@@ -220,57 +221,66 @@
     }
 
     async function mint() {
-        if (!signer) return connect();
-        const btn = document.getElementById('mintBtn');
-        const status = document.getElementById('status');
-        
-        try {
-            btn.disabled = true;
-            const userAddress = await signer.getAddress();
-            
-            // Konversi ke string untuk menghindari floating point error
-            const amountStr = currentAmount.toString();
-            const amount6Decimals = ethers.parseUnits(amountStr, 6);
-            
-            const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
-            const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-            
-            status.innerText = "CHECKING PERMISSIONS...";
-            const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
-            
-            // Perbaikan logika allowance
-            if (allowance < amount6Decimals) {
-                btn.innerText = "AUTHORIZING...";
-                const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
-                status.innerText = "WAITING FOR APPROVAL...";
-                await appTx.wait(1);
-            }
-            
-            btn.innerText = "EXECUTING MINT...";
-            // Naikkan Gas Limit untuk keamanan
-            const mintTx = await tpcContract.mint(amount6Decimals, { 
-                gasLimit: 500000 
-            });
-            
-            status.innerText = "MINING ON TEMPO...";
-            const receipt = await mintTx.wait(1);
-            
-            if(receipt.status === 1) {
-                showModal(currentAmount * 1000);
-                updateLiveStats();
-            } else {
-                throw new Error("Transaction Reverted");
-            }
+    // 1. Cek koneksi wallet
+    if (!signer) return connect();
 
-        } catch (err) { 
-            console.error(err);
-            alert("Protocol Failed: " + (err.reason || "Check Balance/Gas")); 
-        } finally { 
-            btn.disabled = false; 
-            btn.innerText = "INITIALIZE TRANSACTION"; 
-            status.innerText = "SYSTEM READY"; 
+    const btn = document.getElementById('mintBtn');
+    const status = document.getElementById('status');
+    
+    try {
+        btn.disabled = true;
+        const userAddress = await signer.getAddress();
+        
+        // Konversi input ke format 6 desimal (BigInt)
+        // currentAmount adalah angka seperti 1, 5, atau 10
+        const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+        
+        const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
+        const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+        
+        // 2. CEK ALLOWANCE (Izin penggunaan pathUSD)
+        status.innerText = "CHECKING PERMISSIONS...";
+        const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
+        
+        if (allowance < amount6Decimals) {
+            btn.innerText = "AUTHORIZING...";
+            status.innerText = "PLEASE APPROVE pathUSD IN WALLET...";
+            
+            // Approve jumlah besar agar tidak perlu approve berkali-kali (opsional)
+            const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
+            await appTx.wait(1); // Tunggu konfirmasi network
         }
+        
+        // 3. PROSES MINTING
+        btn.innerText = "EXECUTING MINT...";
+        status.innerText = "CONFIRM MINT TRANSACTION...";
+        
+        // Gunakan gasLimit yang cukup untuk jaringan Tempo
+        const mintTx = await tpcContract.mint(amount6Decimals, { 
+            gasLimit: 400000 
+        });
+        
+        status.innerText = "MINING ON TEMPO MAINNET...";
+        const receipt = await mintTx.wait(1);
+        
+        // 4. BERHASIL
+        if(receipt.status === 1) {
+            const receivedAmount = currentAmount * 1000;
+            showModal(receivedAmount); // Tampilkan pop-up sukses
+            updateLiveStats(); // Update angka progress di web
+            status.innerText = "TRANSACTION SUCCESSFUL";
+        }
+
+    } catch (err) { 
+        console.error(err);
+        // Tangani error umum (User cancel, saldo kurang, dll)
+        alert("Transaction Error: " + (err.reason || "Check Balance")); 
+    } finally { 
+        btn.disabled = false; 
+        btn.innerText = "INITIALIZE TRANSACTION"; 
+        if(status.innerText !== "TRANSACTION SUCCESSFUL") status.innerText = "SYSTEM READY";
     }
+}
 
     function showModal(amount) {
         document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
