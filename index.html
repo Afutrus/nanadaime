@@ -249,30 +249,61 @@
         }
 
         async function mint() {
-            if (!signer) return connect();
-            try {
-                const btn = document.getElementById('mintBtn');
-                btn.disabled = true;
-                btn.innerText = "AUTHORIZING PAYMENT...";
-                const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
-                const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
-                const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
-                await appTx.wait();
-                
-                btn.innerText = "EXECUTING PROTOCOL...";
-                const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-                const mintTx = await enshContract.mint(amountWei);
-                document.getElementById('status').innerText = "TRANSACTION PENDING IN BLOCKCHAIN...";
-                await mintTx.wait();
+    if (!signer) return connect();
+    const btn = document.getElementById('mintBtn');
+    const status = document.getElementById('status');
 
-                alert("PROTOCOL SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
-                updateLiveStats();
-            } catch (err) { alert("Transaction Terminated."); }
-            finally { 
-                document.getElementById('mintBtn').disabled = false;
-                document.getElementById('mintBtn').innerText = "INITIALIZE TRANSACTION";
-            }
+    try {
+        btn.disabled = true;
+        btn.innerText = "AUTHORIZING PAYMENT...";
+        status.innerText = "Check your wallet to Approve pathUSD...";
+
+        const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
+        const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
+        
+        // 1. Jalankan Approve
+        const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
+        status.innerText = "Waiting for Approve confirmation...";
+        
+        // KRUSIAL: Tunggu sampai transaksi approve benar-benar masuk blok
+        await appTx.wait(1); 
+
+        // 2. Jalankan Mint
+        btn.innerText = "EXECUTING PROTOCOL...";
+        status.innerText = "Check your wallet to confirm Mint...";
+        
+        const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+        
+        // Tambahkan gasLimit manual jika sering gagal secara otomatis
+        const mintTx = await enshContract.mint(amountWei, {
+            gasLimit: 300000 // Batasan gas untuk memastikan transaksi tidak terputus
+        });
+        
+        status.innerText = "Transaction pending in blockchain...";
+        await mintTx.wait(1);
+
+        alert("PROTOCOL SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
+        status.innerText = "MINT SUCCESSFUL";
+        updateLiveStats();
+        
+    } catch (err) {
+        console.error("Detail Error:", err);
+        
+        // Memberikan pesan error yang lebih spesifik
+        if (err.code === "ACTION_REJECTED") {
+            alert("Transaction Rejected by User.");
+        } else if (err.data && err.data.message) {
+            alert("Contract Error: " + err.data.message);
+        } else {
+            alert("Execution Failed. Check if you have enough pathUSD or Gas (TEMPO).");
         }
+        
+        status.innerText = "TRANSACTION TERMINATED";
+    } finally { 
+        btn.disabled = false;
+        btn.innerText = "INITIALIZE TRANSACTION";
+    }
+}
 
         function copySkill() {
             const url = document.getElementById('skillUrl').innerText;
