@@ -3,118 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TempoClaw | Fair Mint $TPC</title>
+    <title>TempoClaw | Digital Predator $TPC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:italic,wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #0c0c0c; color: #e5e5e0; font-family: 'Inter', sans-serif; }
-        .serif { font-family: 'Libre Baskerville', serif; }
-        .card-bg { background-color: #111111; border: 1px solid rgba(255,255,255,0.05); }
-        .gold-glow { box-shadow: 0 0 40px rgba(212, 175, 55, 0.05); }
-        .progress-bar { height: 2px; background: #1a1a1a; overflow: hidden; }
-        .progress-fill { height: 100%; background: #d4af37; box-shadow: 0 0 10px #d4af37; transition: width 1s ease-in-out; }
-        .pkg-active { border-color: #d4af37 !important; opacity: 1 !important; background: rgba(24, 24, 27, 0.8) !important; }
+        :root {
+            --neon-blue: #00f2ff;
+            --deep-bg: #050505;
+        }
+        body { 
+            background-color: var(--deep-bg); 
+            color: #ffffff; 
+            font-family: 'Outfit', sans-serif;
+            background-image: radial-gradient(circle at 50% -20%, #0044ff22 0%, transparent 50%);
+        }
+        .header-font { font-family: 'Space Grotesk', sans-serif; }
+        
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .glass-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+        }
+
+        /* Neon Button */
+        .btn-neon {
+            background: #ffffff;
+            color: #000000;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+        .btn-neon:hover:not(:disabled) {
+            background: var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: translateY(-2px);
+        }
+
+        .pkg-active {
+            background: rgba(0, 242, 255, 0.05) !important;
+            border: 2px solid var(--neon-blue) !important;
+        }
+        
+        /* Custom Loader */
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: loading 2s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
     </style>
 </head>
-<body class="min-h-screen antialiased pb-20">
+<body class="min-h-screen antialiased overflow-x-hidden">
 
-    <nav class="max-w-6xl mx-auto px-8 py-8 flex justify-between items-center">
-        <div class="serif text-2xl italic tracking-[0.2em] text-[#d4af37]">tempoclaw</div>
-        <div class="flex gap-4">
-            <button onclick="window.open('skill.md')" class="text-[9px] uppercase tracking-widest opacity-40 hover:opacity-100 border border-white/10 px-4 py-2 rounded-full transition">View Skill</button>
-            <button id="connectBtn" class="bg-zinc-900 border border-zinc-800 px-5 py-2 rounded-full text-[10px] uppercase tracking-widest hover:bg-zinc-800 transition text-white">
+    <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center relative z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                <img src="logo.png" alt="TPC" class="w-full h-full object-cover onerror='this.style.display=\"none\"'">
+                <span class="header-font font-bold text-black text-xl">T</span>
+            </div>
+            <span class="header-font text-xl font-bold tracking-tighter uppercase">TempoClaw</span>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <a href="skill.md" class="text-[10px] tracking-[0.2em] opacity-40 hover:opacity-100 transition uppercase font-semibold">Agent.md</a>
+            <button id="connectBtn" class="bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition">
                 Connect Wallet
             </button>
         </div>
     </nav>
 
-    <main class="max-w-xl mx-auto px-4 pt-10 text-center">
-        <h1 class="serif text-6xl mb-4 italic tracking-tight text-white">tempoclaw</h1>
-        <p class="text-[10px] opacity-40 mb-10 tracking-[0.3em] uppercase italic text-gold">1 pathUSD = 1,000 $TPC. Max 50 per tx.</p>
+    <main class="max-w-xl mx-auto px-4 pt-16 relative z-10">
+        <div class="text-center mb-12">
+            <h2 class="header-font text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
+                MINT $TPC
+            </h2>
+            <p class="text-[11px] tracking-[0.4em] text-cyan-400 font-medium uppercase mb-2">Protocol: Tempo-4217</p>
+            <p class="text-sm opacity-40 font-light italic">Automated Machine Minting Powered by MPP</p>
+        </div>
 
-        <div class="card-bg rounded-[2.5rem] p-8 gold-glow relative overflow-hidden mb-8">
+        <div class="glass-card p-8 mb-8">
             
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
-                    <p class="text-3xl font-bold text-white">$1</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">1,000 TPC</p>
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-1 group">
+                    <span class="text-xs opacity-40 group-hover:text-cyan-400 transition uppercase">Basic</span>
+                    <span class="text-3xl font-bold">1 <span class="text-xs font-light opacity-50">USD</span></span>
                 </div>
-                <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card opacity-30 cursor-pointer bg-zinc-900/50 border-2 border-white/5 p-6 rounded-2xl text-left transition-all">
-                    <p class="text-3xl font-bold text-white">$5</p>
-                    <p class="text-[9px] opacity-40 uppercase mt-1 tracking-widest">5,000 TPC</p>
+                <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card cursor-pointer p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-1 group opacity-60">
+                    <span class="text-xs opacity-40 group-hover:text-cyan-400 transition uppercase">Pro</span>
+                    <span class="text-3xl font-bold">5 <span class="text-xs font-light opacity-50">USD</span></span>
                 </div>
             </div>
 
-            <div class="mb-6">
-                <input type="number" id="customAmount" placeholder="Or enter amount (Max 50)" 
-                    class="w-full bg-black/40 border border-white/5 rounded-xl py-4 px-6 text-center outline-none focus:border-[#d4af37] transition text-sm text-white"
+            <div class="relative mb-8">
+                <input type="number" id="customAmount" placeholder="CUSTOM MINT AMOUNT (MAX 50)" 
+                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center outline-none focus:border-cyan-400 transition text-sm font-bold tracking-widest"
                     oninput="handleCustomInput(this.value)">
             </div>
 
-            <div class="bg-black/20 border border-white/5 rounded-2xl py-8 mb-8 text-white">
-                <p class="text-[10px] opacity-30 uppercase mb-2 tracking-widest">Total Payment</p>
-                <div class="flex justify-center items-center gap-4">
-                    <span id="displayUSD" class="text-3xl font-light">1</span>
-                    <span class="text-zinc-700 text-2xl">pathUSD</span>
+            <div class="flex justify-between items-end mb-8 px-2">
+                <div class="text-left">
+                    <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Estimated Return</p>
+                    <p class="header-font text-2xl font-bold text-cyan-400"><span id="tokenReturn">1,000</span> TPC</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Total Cost</p>
+                    <p class="header-font text-2xl font-bold"><span id="displayUSD">1</span> <span class="text-xs opacity-50 uppercase">pathUSD</span></p>
                 </div>
             </div>
 
-            <button id="mintBtn" class="w-full bg-[#e5e5e0] hover:bg-white text-black font-bold py-5 rounded-2xl uppercase tracking-[0.2em] text-[11px] mb-8 transition-all active:scale-[0.98]">
-                Execute Mint
+            <button id="mintBtn" class="btn-neon w-full py-5 rounded-2xl text-[12px] uppercase mb-10 transition-all active:scale-[0.97]">
+                Initialize Transaction
             </button>
 
-            <div class="grid grid-cols-4 gap-2 mb-10 text-[10px]">
-                <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Price</p>
-                    <p class="font-medium text-white">$1</p>
+            <div class="grid grid-cols-2 gap-3 mb-8">
+                <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                    <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Network Distributed</p>
+                    <div id="totalDistributed" class="text-xl font-bold shimmer">Loading...</div>
                 </div>
-                <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Tokens/USD</p>
-                    <p class="font-medium text-white">1,000</p>
-                </div>
-                <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Minted</p>
-                    <p id="totalDistributed" class="font-medium text-white">Loading...</p>
-                </div>
-                <div class="border border-white/5 p-3 rounded-xl">
-                    <p class="opacity-30 uppercase mb-1">Cap</p>
-                    <p class="font-medium text-white">60M</p>
+                <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                    <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Mint Progress</p>
+                    <div id="progressPercent" class="text-xl font-bold text-cyan-400">0%</div>
                 </div>
             </div>
 
-            <div class="text-left">
-                <div class="flex justify-between text-[9px] opacity-40 mb-3 uppercase tracking-widest">
-                    <span id="remainingText">Remaining: Loading...</span>
-                    <span id="progressPercent" class="text-[#d4af37]">0%</span>
+            <div class="px-1">
+                <div class="flex justify-between text-[9px] uppercase tracking-[0.2em] opacity-30 mb-3">
+                    <span id="remainingText">Scanning Allocation...</span>
+                    <span>Cap: 60M TPC</span>
                 </div>
-                <div class="progress-bar rounded-full">
-                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div id="progressBar" class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 w-0 transition-all duration-1000"></div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-zinc-900/30 border border-white/5 rounded-2xl p-6 text-left">
-            <h3 class="text-[10px] uppercase tracking-widest text-[#d4af37] mb-3">Agentic Minting (MPP)</h3>
-            <p class="text-[11px] opacity-40 mb-4 font-sans leading-relaxed">Paste this into your agent to load the minting skill and execute via MPP flow.</p>
-            <div class="flex items-center gap-2 bg-black/50 p-3 rounded-lg border border-white/5">
-                <code id="skillUrl" class="text-[10px] opacity-60 truncate flex-1">https://your-domain.vercel.app/skill.md</code>
-                <button onclick="copySkill()" class="text-[10px] bg-zinc-800 px-3 py-1 rounded hover:bg-zinc-700 transition">COPY</button>
+        <div class="glass-card p-6 border-cyan-900/20">
+            <div class="flex items-center gap-4">
+                <div class="flex-1">
+                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Agent MPP Gateway</h4>
+                    <p class="text-[10px] opacity-40">Ready for automated wallet-cli minting</p>
+                </div>
+                <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter">Copy Link</button>
             </div>
+            <div id="skillUrl" class="hidden"></div>
         </div>
 
-        <div id="status" class="mt-8 text-[10px] opacity-30 uppercase tracking-widest leading-loose">
-            Connect wallet on Network 4217 (Tempo) to proceed
+        <div id="status" class="mt-8 text-[9px] uppercase tracking-[0.3em] opacity-20 text-center leading-loose">
+            STANDBY FOR AUTHENTICATION
         </div>
     </main>
 
     <script>
         const CONFIG = {
-            chainId: '0x1079', // 4217
+            chainId: '0x1079',
             rpc: 'https://tempo-mainnet.drpc.org',
-            enshAddr: '0x2CCD6B991ba3e29fC890eaAaf2326ea0d8AfdC70', 
-            pathAddr: '0x20c0000000000000000000000000000000000000', 
+            enshAddr: '0x2CCD6B991ba3e29fC890eaAaf2326ea0d8AfdC70',
+            pathAddr: '0x20c0000000000000000000000000000000000000',
             abi: [
                 "function mint(uint256 amountInUSD) external",
                 "function approve(address spender, uint256 amount) external returns (bool)",
@@ -125,8 +182,6 @@
 
         let signer = null;
         let currentAmount = 1;
-
-        // Sync Skill URL to Current Domain
         document.getElementById('skillUrl').innerText = window.location.origin + "/skill.md";
 
         async function updateLiveStats() {
@@ -138,27 +193,37 @@
                 const remaining = CONFIG.mintCap - minted;
                 const percent = (minted / CONFIG.mintCap) * 100;
 
-                document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M";
-                document.getElementById('remainingText').innerText = "Remaining: " + remaining.toLocaleString() + " TPC";
-                document.getElementById('progressPercent').innerText = percent.toFixed(2) + "% Minted";
+                document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
+                document.getElementById('remainingText').innerText = "AVAIL: " + remaining.toLocaleString() + " TPC";
+                document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
                 document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
             } catch (err) { console.error(err); }
         }
 
         function selectPkg(num, id) {
             currentAmount = num;
-            document.querySelectorAll('.package-card').forEach(el => el.classList.remove('pkg-active'));
-            document.getElementById(id).classList.add('pkg-active');
+            document.querySelectorAll('.package-card').forEach(el => {
+                el.classList.remove('pkg-active');
+                el.classList.add('opacity-60');
+            });
+            const active = document.getElementById(id);
+            active.classList.add('pkg-active');
+            active.classList.remove('opacity-60');
             document.getElementById('customAmount').value = '';
-            document.getElementById('displayUSD').innerText = currentAmount;
+            updateNumbers();
         }
 
         function handleCustomInput(val) {
             let num = parseInt(val) || 0;
             if (num > 50) num = 50;
             currentAmount = num;
+            updateNumbers();
+            document.querySelectorAll('.package-card').forEach(el => el.classList.add('opacity-60'));
+        }
+
+        function updateNumbers() {
             document.getElementById('displayUSD').innerText = currentAmount;
-            document.querySelectorAll('.package-card').forEach(el => el.classList.remove('pkg-active'));
+            document.getElementById('tokenReturn').innerText = (currentAmount * 1000).toLocaleString();
         }
 
         async function connect() {
@@ -180,7 +245,7 @@
                 });
             }
             document.getElementById('connectBtn').innerText = accounts[0].slice(0,6)+"..."+accounts[0].slice(-4);
-            document.getElementById('status').innerText = "Connected to Tempo (Chain 4217)";
+            document.getElementById('status').innerText = "SYSTEM AUTHENTICATED // NETWORK 4217";
         }
 
         async function mint() {
@@ -188,30 +253,31 @@
             try {
                 const btn = document.getElementById('mintBtn');
                 btn.disabled = true;
-                btn.innerText = "Approving pathUSD...";
+                btn.innerText = "AUTHORIZING PAYMENT...";
                 const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
                 const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
                 const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
                 await appTx.wait();
                 
-                btn.innerText = "Executing Mint...";
+                btn.innerText = "EXECUTING PROTOCOL...";
                 const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
                 const mintTx = await enshContract.mint(amountWei);
+                document.getElementById('status').innerText = "TRANSACTION PENDING IN BLOCKCHAIN...";
                 await mintTx.wait();
 
-                alert("Successfully minted " + (currentAmount * 1000) + " TPC!");
+                alert("PROTOCOL SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
                 updateLiveStats();
-            } catch (err) { alert("Transaction failed."); }
+            } catch (err) { alert("Transaction Terminated."); }
             finally { 
                 document.getElementById('mintBtn').disabled = false;
-                document.getElementById('mintBtn').innerText = "Execute Mint";
+                document.getElementById('mintBtn').innerText = "INITIALIZE TRANSACTION";
             }
         }
 
         function copySkill() {
             const url = document.getElementById('skillUrl').innerText;
             navigator.clipboard.writeText(url);
-            alert("Skill URL copied!");
+            alert("Skill URL Copied.");
         }
 
         updateLiveStats();
