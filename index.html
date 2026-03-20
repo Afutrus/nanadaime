@@ -170,7 +170,7 @@
         const CONFIG = {
             chainId: '0x1079',
             rpc: 'https://tempo-mainnet.drpc.org',
-            enshAddr: '0x2CCD6B991ba3e29fC890eaAaf2326ea0d8AfdC70',
+            enshAddr: '0x309d7AacE02Eab930e3947aC67eA4C53292f6b00',
             pathAddr: '0x20c0000000000000000000000000000000000000',
             abi: [
                 "function mint(uint256 amountInUSD) external",
@@ -255,53 +255,38 @@
 
     try {
         btn.disabled = true;
-        btn.innerText = "AUTHORIZING PAYMENT...";
-        status.innerText = "Check your wallet to Approve pathUSD...";
+        btn.innerText = "AUTHORIZING...";
 
-        const amountWei = ethers.parseUnits(currentAmount.toString(), 18);
+        // PENTING: Menggunakan 6 desimal untuk pathUSD
+        const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+        
         const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
         
-        // 1. Jalankan Approve
-        const appTx = await pathContract.approve(CONFIG.enshAddr, amountWei);
-        status.innerText = "Waiting for Approve confirmation...";
-        
-        // KRUSIAL: Tunggu sampai transaksi approve benar-benar masuk blok
-        await appTx.wait(1); 
+        // Step 1: Approve (6 Desimal)
+        const appTx = await pathContract.approve(CONFIG.enshAddr, amount6Decimals);
+        status.innerText = "Confirming Approval...";
+        await appTx.wait(1);
 
-        // 2. Jalankan Mint
-        btn.innerText = "EXECUTING PROTOCOL...";
-        status.innerText = "Check your wallet to confirm Mint...";
+        // Step 2: Mint (6 Desimal)
+        btn.innerText = "EXECUTING...";
+        const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
         
-        const enshContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-        
-        // Tambahkan gasLimit manual jika sering gagal secara otomatis
-        const mintTx = await enshContract.mint(amountWei, {
-            gasLimit: 300000 // Batasan gas untuk memastikan transaksi tidak terputus
+        const mintTx = await tpcContract.mint(amount6Decimals, {
+            gasLimit: 350000 // Gas limit aman
         });
         
-        status.innerText = "Transaction pending in blockchain...";
+        status.innerText = "Processing Blockchain...";
         await mintTx.wait(1);
 
-        alert("PROTOCOL SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
-        status.innerText = "MINT SUCCESSFUL";
+        alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
         updateLiveStats();
-        
     } catch (err) {
-        console.error("Detail Error:", err);
-        
-        // Memberikan pesan error yang lebih spesifik
-        if (err.code === "ACTION_REJECTED") {
-            alert("Transaction Rejected by User.");
-        } else if (err.data && err.data.message) {
-            alert("Contract Error: " + err.data.message);
-        } else {
-            alert("Execution Failed. Check if you have enough pathUSD or Gas (TEMPO).");
-        }
-        
-        status.innerText = "TRANSACTION TERMINATED";
-    } finally { 
+        console.error(err);
+        alert("Transaction Failed. Check if you have Gas (TEMPO) and pathUSD.");
+    } finally {
         btn.disabled = false;
         btn.innerText = "INITIALIZE TRANSACTION";
+        status.innerText = "SYSTEM READY";
     }
 }
 
