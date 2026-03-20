@@ -10,8 +10,8 @@ Use this skill when the agent must mint TempoClaw ($TPC) tokens using the Machin
 ## Goal
 
 1. Check spendable pathUSD balance first.
-2. Execute a paid minting request for $TPC.
-3. Handle MPP payment automatically (1 pathUSD = 1,000 $TPC).
+2. Execute a paid minting request for $TPCLAW.
+3. Handle MPP payment automatically (1 pathUSD = 1,000 $TPCLAW).
 4. Verify transaction settlement.
 5. Return success status and amount minted.
 
@@ -48,19 +48,19 @@ tempo wallet status
 Canonical command (Automated MPP Mint)
 Bash
 # Replace <AMOUNT> with the desired pathUSD to spend (Max 50).
-# 1 pathUSD will result in 1,000 $TPC tokens.
+# 1 pathUSD will result in 1,000 $TPCLAW tokens.
 AMOUNT="1"
-tempo wallet request https://<YOUR_VERCEL_DOMAIN>/api/mint \
+tempo wallet request https://tempoclaw.xyz/api/mint \
   --method POST \
   --json "{\"amount\":$AMOUNT}"
 Raw curl (Manual Credential)
 Bash
-curl -X POST https://<YOUR_VERCEL_DOMAIN>/api/mint \
+curl -X POST https://tempoclaw.xyz/api/mint \
   -H "Content-Type: application/json" \
   -H "Authorization: Payment <CREDENTIAL>" \
   -d '{"amount": 1}'
 Output contract
-If success: Output a JSON summary: {"status": "success", "spent": 1, "received": 1000, "token": "TPC"}.
+If success: Output a JSON summary: {"status": "success", "spent": 1, "received": 1000, "token": "TPCLAW"}.
 
 If fail: Output short error message (e.g., "Insufficient spendable", "Contract Reverted").
 
@@ -71,8 +71,8 @@ Max Limit: If the request exceeds 50 pathUSD, the agent must stop and report "Ex
 Contract Reference
 Token Name: TempoClaw
 
-Symbol: TPC
+Symbol: TPCLAW
 
-Contract Address: 0x2CCD6B991ba3e29fC890eaAaf2326ea0d8AfdC70
+Contract Address: 0xfA4B61D38Ec0ca038283D2fE701E5890ba42C982
 
 Standard: TIP-20 (Tempo Network)
