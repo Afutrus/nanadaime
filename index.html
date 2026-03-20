@@ -143,144 +143,177 @@
     <div id="status" class="fixed bottom-6 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.3em] opacity-30 text-center z-50 bg-black/50 px-6 py-2 rounded-full backdrop-blur-md border border-white/5">STANDBY FOR AUTHENTICATION</div>
 
     <script>
-        const CONFIG = {
-            chainId: '0x1079',
-            rpc: 'https://tempo-mainnet.drpc.org',
-            enshAddr: '0x309d7AacE02Eab930e3947aC67eA4C53292f6b00',
-            pathAddr: '0x20c0000000000000000000000000000000000000',
-            abi: [
-                "function mint(uint256 amountInUSD) external",
-                "function approve(address spender, uint256 amount) external returns (bool)",
-                "function totalMinted() external view returns (uint256)",
-                "function allowance(address owner, address spender) external view returns (uint256)",
-                "event Transfer(address indexed from, address indexed to, uint256 value)"
-            ],
-            mintCap: 60000000
-        };
+    const CONFIG = {
+        chainId: '0x1079',
+        rpc: 'https://tempo-mainnet.drpc.org',
+        enshAddr: '0x309d7AacE02Eab930e3947aC67eA4C53292f6b00',
+        pathAddr: '0x20c0000000000000000000000000000000000000',
+        abi: [
+            "function mint(uint256 amountInUSD) external",
+            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function totalMinted() external view returns (uint256)",
+            "function allowance(address owner, address spender) external view returns (uint256)",
+            "event Transfer(address indexed from, address indexed to, uint256 value)"
+        ],
+        mintCap: 60000000
+    };
 
-        let signer = null;
-        let currentAmount = 1;
-        document.getElementById('skillUrl').innerText = window.location.origin + "/skill.md";
+    let signer = null;
+    let currentAmount = 1;
+    document.getElementById('skillUrl').innerText = window.location.origin + "/skill.md";
 
-        // UI HELPERS
-        function addToFeed(address, amount) {
-            const feedContainer = document.getElementById('mintFeed');
-            if (feedContainer.innerHTML.includes("Awaiting")) feedContainer.innerHTML = '';
-            const shortAddr = address.slice(0, 6) + "..." + address.slice(-4);
-            const item = document.createElement('div');
-            item.className = "feed-item bg-white/5 p-4 rounded-xl flex justify-between items-center glass-card border-l-2 border-cyan-400";
-            item.innerHTML = `<div><p class="text-[10px] font-bold text-cyan-400">${shortAddr}</p><p class="text-[8px] opacity-30 uppercase tracking-widest">Authorized Mint</p></div><div class="text-right"><p class="text-[12px] font-bold text-white tracking-tighter">+${Number(amount).toLocaleString()}</p><p class="text-[8px] opacity-30 uppercase tracking-widest">TPC</p></div>`;
-            feedContainer.prepend(item);
-            if (feedContainer.children.length > 8) feedContainer.lastChild.remove();
-        }
+    // --- FITUR REAL-TIME FEED ---
+    function addToFeed(address, amount) {
+        const feedContainer = document.getElementById('mintFeed');
+        
+        // Cek apakah data ini sudah ada di feed (mencegah duplikat)
+        const id = `tx-${address}-${amount}`;
+        if (document.getElementById(id)) return;
 
-        async function updateLiveStats() {
-            try {
-                const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
-                const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
-                const rawMinted = await contract.totalMinted();
-                const minted = Number(ethers.formatEther(rawMinted));
-                const percent = (minted / CONFIG.mintCap) * 100;
-                document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
-                document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
-                document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
-                document.getElementById('remainingText').innerText = "AVAIL: " + (CONFIG.mintCap - minted).toLocaleString() + " TPC";
-            } catch (err) { console.error("Stats Fetch Error"); }
-        }
+        if (feedContainer.innerHTML.includes("Awaiting")) feedContainer.innerHTML = '';
+        
+        const shortAddr = address.slice(0, 6) + "..." + address.slice(-4);
+        const item = document.createElement('div');
+        item.id = id;
+        item.className = "feed-item bg-white/5 p-4 rounded-xl flex justify-between items-center glass-card border-l-2 border-cyan-400";
+        item.innerHTML = `
+            <div>
+                <p class="text-[10px] font-bold text-cyan-400 tracking-tight">${shortAddr}</p>
+                <p class="text-[8px] opacity-30 uppercase tracking-widest">Authorized Mint</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[12px] font-bold text-white tracking-tighter">+${Number(amount).toLocaleString()}</p>
+                <p class="text-[8px] opacity-30 uppercase tracking-widest">TPC</p>
+            </div>
+        `;
+        feedContainer.prepend(item);
+        if (feedContainer.children.length > 8) feedContainer.lastChild.remove();
+    }
 
-        function showModal(amount) {
-            document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
-            document.getElementById('successModal').classList.add('show');
-        }
+    async function updateLiveStats() {
+        try {
+            const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
+            const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
+            const rawMinted = await contract.totalMinted();
+            const minted = Number(ethers.formatUnits(rawMinted, 18));
+            const percent = (minted / CONFIG.mintCap) * 100;
 
-        function closeModal() {
-            document.getElementById('successModal').classList.remove('show');
-        }
+            document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
+            document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
+            document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
+            document.getElementById('remainingText').innerText = "AVAIL: " + (CONFIG.mintCap - minted).toLocaleString() + " TPC";
+        } catch (err) { console.error("Stats Fetch Error"); }
+    }
 
-        async function setupEventListeners() {
-            try {
-                const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
-                const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
-                contract.on("Transfer", (from, to, value) => {
-                    if (from === "0x0000000000000000000000000000000000000000") {
-                        addToFeed(to, ethers.formatEther(value));
-                        updateLiveStats();
-                    }
-                });
-            } catch (e) { console.warn("Live events unstable."); }
-        }
+    // Memantau blockchain secara aktif
+    async function setupEventListeners() {
+        const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
+        const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
+        
+        // 1. Dapatkan riwayat minting terakhir agar feed tidak kosong saat dibuka
+        try {
+            const filter = contract.filters.Transfer("0x0000000000000000000000000000000000000000");
+            const logs = await contract.queryFilter(filter, -100); // Cek 100 blok terakhir
+            logs.reverse().slice(0, 5).forEach(log => {
+                addToFeed(log.args[1], ethers.formatUnits(log.args[2], 18));
+            });
+        } catch (e) { console.warn("History fetch failed."); }
 
-        function selectPkg(num, id) {
-            currentAmount = num;
-            document.querySelectorAll('.package-card').forEach(el => { el.classList.remove('pkg-active'); el.classList.add('opacity-60'); });
-            const active = document.getElementById(id); active.classList.add('pkg-active'); active.classList.remove('opacity-60');
-            document.getElementById('customAmount').value = ''; updateNumbers();
-        }
-
-        document.getElementById('customAmount').oninput = function() {
-            let num = parseInt(this.value) || 0; if (num > 50) num = 50;
-            currentAmount = num; updateNumbers();
-            document.querySelectorAll('.package-card').forEach(el => el.classList.add('opacity-60'));
-        };
-
-        function updateNumbers() {
-            document.getElementById('displayUSD').innerText = currentAmount;
-            document.getElementById('tokenReturn').innerText = (currentAmount * 1000).toLocaleString();
-        }
-
-        async function connect() {
-            if (!window.ethereum) return alert("Install MetaMask");
-            const provider = new ethers.BrowserProvider(window.ethereum);
-            const accounts = await provider.send("eth_requestAccounts", []);
-            signer = await provider.getSigner();
-            document.getElementById('connectBtn').innerText = accounts[0].slice(0,6)+"..."+accounts[0].slice(-4);
-            document.getElementById('status').innerText = "SYSTEM AUTHENTICATED";
-        }
-
-        async function mint() {
-            if (!signer) return connect();
-            const btn = document.getElementById('mintBtn');
-            const status = document.getElementById('status');
-            try {
-                btn.disabled = true;
-                const userAddress = await signer.getAddress();
-                const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
-                const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
-                const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-
-                status.innerText = "CHECKING PERMISSIONS...";
-                const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
-                
-                if (allowance < amount6Decimals) {
-                    btn.innerText = "AUTHORIZING PAYMENT...";
-                    const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
-                    await appTx.wait(1);
-                    status.innerText = "APPROVAL GRANTED";
-                }
-
-                btn.innerText = "EXECUTING MINT...";
-                const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
-                status.innerText = "BLOCKCHAIN MINING...";
-                await mintTx.wait(1);
-
-                addToFeed(userAddress, currentAmount * 1000);
-                showModal(currentAmount * 1000); // Tampilkan Pop-up Profesional
+        // 2. Pantau event baru secara realtime
+        contract.on("Transfer", (from, to, value) => {
+            if (from === "0x0000000000000000000000000000000000000000") {
+                addToFeed(to, ethers.formatUnits(value, 18));
                 updateLiveStats();
-            } catch (err) { alert("Protocol Failed. Re-check Gas/Balance."); }
-            finally { btn.disabled = false; btn.innerText = "INITIALIZE TRANSACTION"; status.innerText = "SYSTEM READY"; }
-        }
+            }
+        });
+    }
 
-        function copySkill() {
-            const url = document.getElementById('skillUrl').innerText;
-            navigator.clipboard.writeText(url);
-            alert("Skill URL Copied.");
-        }
+    // --- LOGIKA MINTING ---
+    async function mint() {
+        if (!signer) return connect();
+        const btn = document.getElementById('mintBtn');
+        const status = document.getElementById('status');
+        try {
+            btn.disabled = true;
+            const userAddress = await signer.getAddress();
+            const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+            
+            const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
+            const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
 
-        updateLiveStats();
-        setupEventListeners();
-        setInterval(updateLiveStats, 30000);
-        document.getElementById('connectBtn').addEventListener('click', connect);
-        document.getElementById('mintBtn').addEventListener('click', mint);
-    </script>
+            // Cek Izin
+            status.innerText = "CHECKING PERMISSIONS...";
+            const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
+            
+            if (allowance < amount6Decimals) {
+                btn.innerText = "AUTHORIZING...";
+                const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
+                await appTx.wait(1);
+            }
+
+            btn.innerText = "EXECUTING MINT...";
+            const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
+            status.innerText = "MINING ON TEMPO...";
+            
+            // Tunggu Konfirmasi
+            const receipt = await mintTx.wait(1);
+
+            // INSTANT INJECTION: Langsung masukkan ke feed tanpa nunggu RPC
+            addToFeed(userAddress, currentAmount * 1000);
+            
+            showModal(currentAmount * 1000);
+            updateLiveStats();
+        } catch (err) { 
+            console.error(err);
+            alert("Protocol Failed. Re-check Gas/Balance."); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "INITIALIZE TRANSACTION"; 
+            status.innerText = "SYSTEM READY"; 
+        }
+    }
+
+    // UI Functions
+    function showModal(amount) {
+        document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
+        document.getElementById('successModal').classList.add('show');
+    }
+    function closeModal() { document.getElementById('successModal').classList.remove('show'); }
+    function selectPkg(num, id) {
+        currentAmount = num;
+        document.querySelectorAll('.package-card').forEach(el => { el.classList.remove('pkg-active'); el.classList.add('opacity-60'); });
+        const active = document.getElementById(id); active.classList.add('pkg-active'); active.classList.remove('opacity-60');
+        document.getElementById('customAmount').value = ''; updateNumbers();
+    }
+    document.getElementById('customAmount').oninput = function() {
+        let num = parseInt(this.value) || 0; if (num > 50) num = 50;
+        currentAmount = num; updateNumbers();
+        document.querySelectorAll('.package-card').forEach(el => el.classList.add('opacity-60'));
+    };
+    function updateNumbers() {
+        document.getElementById('displayUSD').innerText = currentAmount;
+        document.getElementById('tokenReturn').innerText = (currentAmount * 1000).toLocaleString();
+    }
+    async function connect() {
+        if (!window.ethereum) return alert("Install MetaMask");
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        document.getElementById('connectBtn').innerText = accounts[0].slice(0,6)+"..."+accounts[0].slice(-4);
+        document.getElementById('status').innerText = "SYSTEM AUTHENTICATED";
+    }
+    function copySkill() {
+        const url = document.getElementById('skillUrl').innerText;
+        navigator.clipboard.writeText(url);
+        alert("Skill URL Copied.");
+    }
+
+    // INIT
+    updateLiveStats();
+    setupEventListeners();
+    setInterval(updateLiveStats, 15000); // Cek stats setiap 15 detik
+    document.getElementById('connectBtn').addEventListener('click', connect);
+    document.getElementById('mintBtn').addEventListener('click', mint);
+</script>
 </body>
 </html>
