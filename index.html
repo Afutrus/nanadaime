@@ -220,23 +220,61 @@
         }
 
         async function mint() {
-            if (!signer) return connect();
-            const btn = document.getElementById('mintBtn');
-            try {
-                btn.disabled = true; btn.innerText = "AUTHORIZING...";
-                const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
-                const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
-                const appTx = await pathContract.approve(CONFIG.enshAddr, amount6Decimals);
-                await appTx.wait(1);
+    if (!signer) return connect();
+    const btn = document.getElementById('mintBtn');
+    const status = document.getElementById('status');
 
-                btn.innerText = "EXECUTING...";
-                const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-                const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
-                await mintTx.wait(1);
-                alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
-            } catch (err) { console.error(err); alert("Failed."); }
-            finally { btn.disabled = false; btn.innerText = "INITIALIZE TRANSACTION"; }
+    try {
+        btn.disabled = true;
+        const userAddress = await signer.getAddress();
+        const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+        
+        const pathContract = new ethers.Contract(CONFIG.pathAddr, [
+            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function allowance(address owner, address spender) external view returns (uint256)"
+        ], signer);
+
+        const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+
+        // --- STEP 1: CEK ALLOWANCE OTOMATIS ---
+        status.innerText = "Checking authorization...";
+        const currentAllowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
+
+        if (currentAllowance < amount6Decimals) {
+            // Jika izin kurang, baru minta Approve
+            btn.innerText = "AUTHORIZING...";
+            status.innerText = "Please approve pathUSD in your wallet...";
+            
+            // Kita approve jumlah besar sekaligus (opsional) atau sesuai input
+            // Tips: Approve jumlah besar (misal 1000) agar tidak minta lagi selamanya
+            const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6)); 
+            status.innerText = "Waiting for approval confirmation...";
+            await appTx.wait(1);
+            status.innerText = "Approval successful!";
         }
+
+        // --- STEP 2: LANGSUNG MINT ---
+        btn.innerText = "EXECUTING PROTOCOL...";
+        status.innerText = "Confirming mint transaction...";
+        
+        const mintTx = await tpcContract.mint(amount6Decimals, {
+            gasLimit: 350000
+        });
+        
+        status.innerText = "Mining transaction...";
+        await mintTx.wait(1);
+
+        alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
+        updateLiveStats();
+    } catch (err) {
+        console.error(err);
+        alert("Transaction Failed. Check your balance or gas.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "INITIALIZE TRANSACTION";
+        status.innerText = "SYSTEM READY";
+    }
+}
 
         updateLiveStats();
         setupEventListeners();
