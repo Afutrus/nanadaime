@@ -286,38 +286,35 @@
     setInterval(updateLiveStats, 15000);
     document.getElementById('connectBtn').addEventListener('click', connect);
     document.getElementById('mintBtn').addEventListener('click', mint);
+    setInterval(() => {
+        // Deteksi berdasarkan perbedaan ukuran layar (jika Console terbuka di samping/bawah)
+        const threshold = 160;
+        const widthDiff = window.outerWidth - window.innerWidth > threshold;
+        const heightDiff = window.outerHeight - window.innerHeight > threshold;
+        
+        if (widthDiff || heightDiff) {
+            document.body.innerHTML = "<h1>SYSTEM LOCKED: ILLEGAL ACCESS</h1>";
+            window.location.href = "about:blank"; // Langsung buang ke halaman kosong
+        }
+        
+        // Trik Debugger Loop
         (function() {
-        // 1. Matikan Klik Kanan
-        document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // 2. Matikan Shortcut Keyboard (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123 || 
-                (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0) || e.keyCode == 'C'.charCodeAt(0))) || 
-                (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
-                return false;
-            }
-        };
-
-        // 3. Deteksi Inspect Element & Auto Reload
-        // Menggunakan trik debugger loop untuk mendeteksi pembukaan konsol
-        const detector = function() {
-            const start = new Date();
-            debugger; // Ini akan berhenti jika DevTools terbuka
-            const end = new Date();
-            
-            // Jika eksekusi melambat (karena debugger aktif), berarti DevTools terbuka
-            if (end - start > 100) {
-                document.body.innerHTML = '<div style="background:#000;color:#00f2ff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;text-align:center;"><h1>SECURITY BREACH DETECTED<br>PLEASE CLOSE INSPECT ELEMENT TO PROCEED</h1></div>';
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            }
-        };
-
-        // Jalankan deteksi secara berkala
-        setInterval(detector, 500);
-    })();
+            (function a() {
+                try {
+                    (function b(i) {
+                        if (("" + i / i).length !== 1 || i % 20 === 0) {
+                            (function() {}).constructor("debugger")();
+                        } else {
+                            debugger;
+                        }
+                        b(++i);
+                    })(0);
+                } catch (e) {
+                    setTimeout(a, 5);
+                }
+            })();
+        })();
+    }, 500);
 </script>
 </body>
 </html>
