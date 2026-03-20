@@ -120,7 +120,7 @@
                         <h4 class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Agent MPP Gateway</h4>
                         <p class="text-[10px] opacity-40">Load $TPC skill for autonomous agents</p>
                     </div>
-                    <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter text-white">Copy Skill URL</button>
+                    <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter text-white">Mint via TempoClaw Agent</button>
                 </div>
                 <div id="skillUrl" class="hidden"></div>
             </div>
@@ -276,10 +276,12 @@
         document.getElementById('status').innerText = "SYSTEM AUTHENTICATED";
     }
     function copySkill() {
-        const url = document.getElementById('skillUrl').innerText;
-        navigator.clipboard.writeText(url);
-        alert("Skill URL Copied.");
-    }
+    // Tentukan link tujuan Anda di sini (misal: link Telegram atau Document)
+    const targetLink = "https://t.me/TempoClawXyz_bot"; 
+    
+    // Membuka link di tab baru
+    window.open(targetLink, '_blank');
+}
 
     updateLiveStats();
     setupEventListeners();
