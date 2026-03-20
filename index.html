@@ -152,7 +152,7 @@
         pathAddr: '0x20c0000000000000000000000000000000000000',
         abi: [
             "function mint(uint256 amountInUSD) external",
-            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function approve(address spender, uint256 amount) external", // Disederhanakan
             "function totalMinted() external view returns (uint256)",
             "function allowance(address owner, address spender) external view returns (uint256)",
             "event Transfer(address indexed from, address indexed to, uint256 value)"
@@ -223,28 +223,53 @@
         if (!signer) return connect();
         const btn = document.getElementById('mintBtn');
         const status = document.getElementById('status');
+        
         try {
             btn.disabled = true;
             const userAddress = await signer.getAddress();
-            const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+            
+            // Konversi ke string untuk menghindari floating point error
+            const amountStr = currentAmount.toString();
+            const amount6Decimals = ethers.parseUnits(amountStr, 6);
+            
             const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
             const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+            
             status.innerText = "CHECKING PERMISSIONS...";
             const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
+            
+            // Perbaikan logika allowance
             if (allowance < amount6Decimals) {
                 btn.innerText = "AUTHORIZING...";
                 const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
+                status.innerText = "WAITING FOR APPROVAL...";
                 await appTx.wait(1);
             }
+            
             btn.innerText = "EXECUTING MINT...";
-            const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
+            // Naikkan Gas Limit untuk keamanan
+            const mintTx = await tpcContract.mint(amount6Decimals, { 
+                gasLimit: 500000 
+            });
+            
             status.innerText = "MINING ON TEMPO...";
             const receipt = await mintTx.wait(1);
-            addToFeed(userAddress, currentAmount * 1000);
-            showModal(currentAmount * 1000);
-            updateLiveStats();
-        } catch (err) { alert("Protocol Failed. Re-check Gas/Balance."); }
-        finally { btn.disabled = false; btn.innerText = "INITIALIZE TRANSACTION"; status.innerText = "SYSTEM READY"; }
+            
+            if(receipt.status === 1) {
+                showModal(currentAmount * 1000);
+                updateLiveStats();
+            } else {
+                throw new Error("Transaction Reverted");
+            }
+
+        } catch (err) { 
+            console.error(err);
+            alert("Protocol Failed: " + (err.reason || "Check Balance/Gas")); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "INITIALIZE TRANSACTION"; 
+            status.innerText = "SYSTEM READY"; 
+        }
     }
 
     function showModal(amount) {
