@@ -233,7 +233,7 @@
         
         // Konversi input ke format 6 desimal (BigInt)
         // currentAmount adalah angka seperti 1, 5, atau 10
-        const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+        const amount6Decimals = ethers.parseUnits(parseFloat(currentAmount).toFixed(6), 6);
         
         const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
         const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
