@@ -221,7 +221,6 @@
     }
 
     async function mint() {
-    // 1. Cek koneksi wallet
     if (!signer) return connect();
 
     const btn = document.getElementById('mintBtn');
@@ -231,57 +230,53 @@
         btn.disabled = true;
         const userAddress = await signer.getAddress();
         
-        // Konversi input ke format 6 desimal (BigInt)
-        // currentAmount adalah angka seperti 1, 5, atau 10
-        const amount6Decimals = ethers.parseUnits(parseFloat(currentAmount).toFixed(6), 6);
+        // MENIRU bot.js: parseUnits dengan 6 desimal
+        const amountStr = currentAmount.toString();
+        const amount6Decimals = ethers.parseUnits(amountStr, 6);
         
+        const provider = new ethers.BrowserProvider(window.ethereum);
         const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
         const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
         
-        // 2. CEK ALLOWANCE (Izin penggunaan pathUSD)
-        status.innerText = "CHECKING PERMISSIONS...";
+        // STEP 1: APPROVE (Meniru bot.js)
+        status.innerText = "APPROVING pathUSD...";
         const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
         
-        if (allowance < amount6Decimals) {
+        if (BigInt(allowance) < BigInt(amount6Decimals)) {
             btn.innerText = "AUTHORIZING...";
-            status.innerText = "PLEASE APPROVE pathUSD IN WALLET...";
-            
-            // Approve jumlah besar agar tidak perlu approve berkali-kali (opsional)
-            const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
-            await appTx.wait(1); // Tunggu konfirmasi network
+            const approveTx = await pathContract.approve(CONFIG.enshAddr, amount6Decimals);
+            await approveTx.wait(); // Menunggu seperti bot.wait()
         }
         
-        // 3. PROSES MINTING
-        btn.innerText = "EXECUTING MINT...";
-        status.innerText = "CONFIRM MINT TRANSACTION...";
+        // STEP 2: MINT (Meniru bot.js)
+        btn.innerText = "MINTING TPC...";
+        status.innerText = "EXECUTING MINT...";
         
-        // Gunakan gasLimit yang cukup untuk jaringan Tempo
         const mintTx = await tpcContract.mint(amount6Decimals, { 
-            gasLimit: 400000 
+            gasLimit: 300000 // Menyesuaikan dengan kebutuhan Tempo
         });
         
-        status.innerText = "MINING ON TEMPO MAINNET...";
-        const receipt = await mintTx.wait(1);
-        
-        // 4. BERHASIL
-        if(receipt.status === 1) {
+        status.innerText = "WAITING FOR BLOCK...";
+        const receipt = await mintTx.wait();
+
+        if (receipt.status === 1) {
+            // Sukses (1 USD = 1000 TPC)
             const receivedAmount = currentAmount * 1000;
-            showModal(receivedAmount); // Tampilkan pop-up sukses
-            updateLiveStats(); // Update angka progress di web
-            status.innerText = "TRANSACTION SUCCESSFUL";
+            addToFeed(userAddress, receivedAmount);
+            showModal(receivedAmount);
+            updateLiveStats();
+            status.innerText = "SUCCESSFUL";
         }
 
     } catch (err) { 
-        console.error(err);
-        // Tangani error umum (User cancel, saldo kurang, dll)
-        alert("Transaction Error: " + (err.reason || "Check Balance")); 
+        console.error("Mint Error:", err);
+        alert("Mint failed (check balance/gas)"); 
     } finally { 
         btn.disabled = false; 
         btn.innerText = "INITIALIZE TRANSACTION"; 
-        if(status.innerText !== "TRANSACTION SUCCESSFUL") status.innerText = "SYSTEM READY";
+        if(status.innerText !== "SUCCESSFUL") status.innerText = "SYSTEM READY";
     }
 }
-
     function showModal(amount) {
         document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
         document.getElementById('successModal').classList.add('show');
