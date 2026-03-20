@@ -17,42 +17,65 @@
         .btn-neon:hover:not(:disabled) { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); transform: translateY(-2px); }
         .pkg-active { background: rgba(0, 242, 255, 0.05) !important; border: 2px solid var(--neon-blue) !important; }
         .feed-item { animation: slideIn 0.5s ease-out forwards; border-left: 2px solid var(--neon-blue); margin-bottom: 8px; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-15px); } to { opacity: 1; transform: translateX(0); } }
         .shimmer { background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent); background-size: 200% 100%; animation: loading 2s infinite; }
         @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Modal Animation */
+        #successModal { transition: opacity 0.3s ease, visibility 0.3s; }
+        .modal-content { transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #successModal.show { opacity: 1; visibility: visible; }
+        #successModal.show .modal-content { transform: scale(1); }
     </style>
 </head>
 <body class="min-h-screen antialiased overflow-x-hidden pb-20">
 
+    <div id="successModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 invisible">
+        <div class="modal-content glass-card p-10 max-w-sm w-full text-center border-cyan-400/30 shadow-[0_0_50px_rgba(0,242,255,0.15)] mx-4">
+            <div class="w-20 h-20 bg-cyan-400/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-cyan-400/50">
+                <svg class="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="header-font text-2xl font-bold mb-2 uppercase tracking-tighter">Mint Success</h3>
+            <p class="text-sm opacity-50 mb-8 font-light">The predator has been unleashed. Your $TPC tokens have settled on the blockchain.</p>
+            <div class="bg-white/5 rounded-xl p-4 mb-8 border border-white/5">
+                <p class="text-[10px] uppercase tracking-widest opacity-30 mb-1">Received</p>
+                <p id="modalAmount" class="header-font text-2xl font-bold text-cyan-400">1,000 TPC</p>
+            </div>
+            <button onclick="closeModal()" class="btn-neon w-full py-4 rounded-xl text-[10px] uppercase">Close Terminal</button>
+        </div>
+    </div>
+
     <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center relative z-10">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg font-bold text-black text-xl">T</div>
-            <span class="header-font text-xl font-bold tracking-tighter uppercase">TempoClaw</span>
+            <span class="header-font text-xl font-bold tracking-tighter uppercase text-white">TempoClaw</span>
         </div>
         <div class="flex items-center gap-4">
-            <a href="skill.md" class="text-[10px] tracking-[0.2em] opacity-40 hover:opacity-100 transition uppercase font-semibold">Agent.md</a>
+            <a href="skill.md" target="_blank" class="text-[10px] tracking-[0.2em] opacity-40 hover:opacity-100 transition uppercase font-semibold">Agent.md</a>
             <button id="connectBtn" class="bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition">Connect Wallet</button>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 pt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
-        
         <div class="lg:col-span-7 space-y-6">
             <div class="glass-card p-8">
-                <h2 class="header-font text-4xl font-bold mb-6 uppercase tracking-tighter italic">Mint $TPC</h2>
+                <div class="text-center lg:text-left mb-8">
+                    <h2 class="header-font text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 uppercase italic tracking-tighter">Mint $TPC</h2>
+                    <p class="text-[11px] tracking-[0.4em] text-cyan-400 font-medium uppercase">Tempo-4217 Mainnet</p>
+                </div>
                 
                 <div class="grid grid-cols-2 gap-4 mb-6">
                     <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer p-6 rounded-2xl border border-white/10 text-center transition-all">
-                        <span class="text-xs opacity-40 uppercase block mb-1 tracking-widest">Basic</span>
-                        <span class="text-3xl font-bold">1 <span class="text-xs font-light opacity-50">USD</span></span>
+                        <span class="text-xs opacity-40 uppercase block mb-1 tracking-widest font-bold">Basic</span>
+                        <span class="text-3xl font-bold italic">1 <span class="text-xs font-light opacity-50 uppercase">USD</span></span>
                     </div>
                     <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card cursor-pointer p-6 rounded-2xl border border-white/10 text-center transition-all opacity-60">
-                        <span class="text-xs opacity-40 uppercase block mb-1 tracking-widest">Pro</span>
-                        <span class="text-3xl font-bold">5 <span class="text-xs font-light opacity-50">USD</span></span>
+                        <span class="text-xs opacity-40 uppercase block mb-1 tracking-widest font-bold">Pro</span>
+                        <span class="text-3xl font-bold italic">5 <span class="text-xs font-light opacity-50 uppercase">USD</span></span>
                     </div>
                 </div>
 
-                <input type="number" id="customAmount" placeholder="CUSTOM MINT AMOUNT (MAX 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center outline-none focus:border-cyan-400 transition text-sm font-bold tracking-widest mb-8">
+                <input type="number" id="customAmount" placeholder="CUSTOM MINT AMOUNT (MAX 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center outline-none focus:border-cyan-400 transition text-sm font-bold tracking-widest mb-8 text-white">
 
                 <div class="flex justify-between items-end mb-8 px-2 border-b border-white/5 pb-6">
                     <div class="text-left">
@@ -60,26 +83,26 @@
                         <p class="header-font text-2xl font-bold text-cyan-400"><span id="tokenReturn">1,000</span> TPC</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Total Cost</p>
+                        <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1 font-bold text-white">Total Cost</p>
                         <p class="header-font text-2xl font-bold"><span id="displayUSD">1</span> <span class="text-xs opacity-50 uppercase">pathUSD</span></p>
                     </div>
                 </div>
 
-                <button id="mintBtn" class="btn-neon w-full py-5 rounded-2xl text-[12px] uppercase mb-10">Initialize Transaction</button>
+                <button id="mintBtn" class="btn-neon w-full py-5 rounded-2xl text-[12px] uppercase mb-10 transition-all active:scale-[0.98]">Initialize Transaction</button>
 
                 <div class="grid grid-cols-2 gap-3 mb-8">
-                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl text-white">
                         <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2 font-bold">Total Minted</p>
                         <div id="totalDistributed" class="text-xl font-bold shimmer tracking-tighter">0.00M TPC</div>
                     </div>
-                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl text-white">
                         <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2 font-bold">Progress</p>
                         <div id="progressPercent" class="text-xl font-bold text-cyan-400">0%</div>
                     </div>
                 </div>
 
-                <div class="px-1 mb-2">
-                    <div class="flex justify-between text-[9px] uppercase tracking-[0.2em] opacity-30 mb-2">
+                <div class="px-1">
+                    <div class="flex justify-between text-[9px] uppercase tracking-[0.2em] opacity-30 mb-2 text-white">
                         <span id="remainingText">Scanning Allocation...</span>
                         <span>Cap: 60M TPC</span>
                     </div>
@@ -93,9 +116,9 @@
                 <div class="flex items-center gap-4">
                     <div class="flex-1">
                         <h4 class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Agent MPP Gateway</h4>
-                        <p class="text-[10px] opacity-40">Load $TPC skill for automated minting</p>
+                        <p class="text-[10px] opacity-40">Load $TPC skill for autonomous agents</p>
                     </div>
-                    <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter text-white">Copy Link</button>
+                    <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter text-white">Copy Skill URL</button>
                 </div>
                 <div id="skillUrl" class="hidden"></div>
             </div>
@@ -107,17 +130,17 @@
                     <h3 class="header-font text-sm font-bold uppercase tracking-widest text-cyan-400">Live Activity</h3>
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <span class="text-[9px] opacity-40 uppercase">Network Live</span>
+                        <span class="text-[9px] opacity-40 uppercase tracking-widest">Network Synced</span>
                     </div>
                 </div>
                 <div id="mintFeed" class="flex-1 space-y-3 overflow-y-auto pr-2 custom-scrollbar">
-                    <div class="text-[10px] opacity-20 text-center py-10 uppercase italic tracking-widest">Waiting for new waves...</div>
+                    <div class="text-[10px] opacity-20 text-center py-10 uppercase italic tracking-widest">Awaiting new transactions...</div>
                 </div>
             </div>
         </div>
     </main>
 
-    <div id="status" class="fixed bottom-6 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.3em] opacity-20 text-center z-50">STANDBY FOR AUTHENTICATION</div>
+    <div id="status" class="fixed bottom-6 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-[0.3em] opacity-30 text-center z-50 bg-black/50 px-6 py-2 rounded-full backdrop-blur-md border border-white/5">STANDBY FOR AUTHENTICATION</div>
 
     <script>
         const CONFIG = {
@@ -139,6 +162,18 @@
         let currentAmount = 1;
         document.getElementById('skillUrl').innerText = window.location.origin + "/skill.md";
 
+        // UI HELPERS
+        function addToFeed(address, amount) {
+            const feedContainer = document.getElementById('mintFeed');
+            if (feedContainer.innerHTML.includes("Awaiting")) feedContainer.innerHTML = '';
+            const shortAddr = address.slice(0, 6) + "..." + address.slice(-4);
+            const item = document.createElement('div');
+            item.className = "feed-item bg-white/5 p-4 rounded-xl flex justify-between items-center glass-card border-l-2 border-cyan-400";
+            item.innerHTML = `<div><p class="text-[10px] font-bold text-cyan-400">${shortAddr}</p><p class="text-[8px] opacity-30 uppercase tracking-widest">Authorized Mint</p></div><div class="text-right"><p class="text-[12px] font-bold text-white tracking-tighter">+${Number(amount).toLocaleString()}</p><p class="text-[8px] opacity-30 uppercase tracking-widest">TPC</p></div>`;
+            feedContainer.prepend(item);
+            if (feedContainer.children.length > 8) feedContainer.lastChild.remove();
+        }
+
         async function updateLiveStats() {
             try {
                 const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
@@ -146,32 +181,33 @@
                 const rawMinted = await contract.totalMinted();
                 const minted = Number(ethers.formatEther(rawMinted));
                 const percent = (minted / CONFIG.mintCap) * 100;
-
                 document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
                 document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
                 document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
                 document.getElementById('remainingText').innerText = "AVAIL: " + (CONFIG.mintCap - minted).toLocaleString() + " TPC";
-            } catch (err) { console.error("Stats Error:", err); }
+            } catch (err) { console.error("Stats Fetch Error"); }
+        }
+
+        function showModal(amount) {
+            document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
+            document.getElementById('successModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('show');
         }
 
         async function setupEventListeners() {
-            const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
-            const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
-            const feedContainer = document.getElementById('mintFeed');
-
-            contract.on("Transfer", (from, to, value) => {
-                if (from === "0x0000000000000000000000000000000000000000") {
-                    if (feedContainer.innerHTML.includes("Waiting")) feedContainer.innerHTML = '';
-                    const amount = Number(ethers.formatEther(value)).toLocaleString();
-                    const shortAddr = to.slice(0, 6) + "..." + to.slice(-4);
-                    const item = document.createElement('div');
-                    item.className = "feed-item bg-white/5 p-3 rounded-lg flex justify-between items-center";
-                    item.innerHTML = `<div><p class="text-[10px] font-bold text-cyan-400">${shortAddr}</p><p class="text-[8px] opacity-30 uppercase">Authorized Mint</p></div><div class="text-right"><p class="text-[11px] font-bold text-white">+${amount}</p><p class="text-[8px] opacity-30 uppercase">TPC</p></div>`;
-                    feedContainer.prepend(item);
-                    if (feedContainer.children.length > 8) feedContainer.lastChild.remove();
-                    updateLiveStats();
-                }
-            });
+            try {
+                const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
+                const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
+                contract.on("Transfer", (from, to, value) => {
+                    if (from === "0x0000000000000000000000000000000000000000") {
+                        addToFeed(to, ethers.formatEther(value));
+                        updateLiveStats();
+                    }
+                });
+            } catch (e) { console.warn("Live events unstable."); }
         }
 
         function selectPkg(num, id) {
@@ -212,23 +248,25 @@
                 const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
                 const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
 
-                // --- CHECK ALLOWANCE ---
-                status.innerText = "CHECKING AUTHORIZATION...";
+                status.innerText = "CHECKING PERMISSIONS...";
                 const allowance = await pathContract.allowance(userAddress, CONFIG.enshAddr);
                 
                 if (allowance < amount6Decimals) {
-                    btn.innerText = "AUTHORIZING...";
+                    btn.innerText = "AUTHORIZING PAYMENT...";
                     const appTx = await pathContract.approve(CONFIG.enshAddr, ethers.parseUnits("1000000", 6));
                     await appTx.wait(1);
+                    status.innerText = "APPROVAL GRANTED";
                 }
 
-                btn.innerText = "EXECUTING...";
+                btn.innerText = "EXECUTING MINT...";
                 const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
-                status.innerText = "MINING TRANSACTION...";
+                status.innerText = "BLOCKCHAIN MINING...";
                 await mintTx.wait(1);
-                alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
+
+                addToFeed(userAddress, currentAmount * 1000);
+                showModal(currentAmount * 1000); // Tampilkan Pop-up Profesional
                 updateLiveStats();
-            } catch (err) { alert("Transaction Failed."); console.error(err); }
+            } catch (err) { alert("Protocol Failed. Re-check Gas/Balance."); }
             finally { btn.disabled = false; btn.innerText = "INITIALIZE TRANSACTION"; status.innerText = "SYSTEM READY"; }
         }
 
