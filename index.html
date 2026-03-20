@@ -181,7 +181,7 @@
             </div>
             <div class="text-right">
                 <p class="text-[12px] font-bold text-white tracking-tighter text-white">+${Number(amount).toLocaleString()}</p>
-                <p class="text-[8px] opacity-30 uppercase tracking-widest text-white">TPC</p>
+                <p class="text-[8px] opacity-30 uppercase tracking-widest text-white">TPCLAW</p>
             </div>
         `;
         feedContainer.prepend(item);
@@ -249,7 +249,7 @@
         }
         
         // STEP 2: MINT (Meniru bot.js)
-        btn.innerText = "MINTING TPC...";
+        btn.innerText = "MINTING TPCLAW...";
         status.innerText = "EXECUTING MINT...";
         
         const mintTx = await tpcContract.mint(amount6Decimals, { 
@@ -278,7 +278,7 @@
     }
 }
     function showModal(amount) {
-        document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPC";
+        document.getElementById('modalAmount').innerText = amount.toLocaleString() + " TPCLAW";
         document.getElementById('successModal').classList.add('show');
     }
     function closeModal() { document.getElementById('successModal').classList.remove('show'); }
