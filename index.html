@@ -21,148 +21,109 @@
         }
         .header-font { font-family: 'Space Grotesk', sans-serif; }
         
-        /* Glassmorphism Card */
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 2rem;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.4s ease;
         }
-        .glass-card:hover {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
-        }
+        .glass-card:hover { border-color: var(--neon-blue); box-shadow: 0 0 30px rgba(0, 242, 255, 0.1); }
 
-        /* Neon Button */
         .btn-neon {
-            background: #ffffff;
-            color: #000000;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            background: #ffffff; color: #000; font-weight: 700; letter-spacing: 0.1em;
+            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
         }
-        .btn-neon:hover:not(:disabled) {
-            background: var(--neon-blue);
-            box-shadow: 0 0 20px var(--neon-blue);
-            transform: translateY(-2px);
-        }
+        .btn-neon:hover:not(:disabled) { background: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); transform: translateY(-2px); }
 
-        .pkg-active {
-            background: rgba(0, 242, 255, 0.05) !important;
-            border: 2px solid var(--neon-blue) !important;
-        }
+        .pkg-active { background: rgba(0, 242, 255, 0.05) !important; border: 2px solid var(--neon-blue) !important; }
         
-        /* Custom Loader */
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent);
-            background-size: 200% 100%;
-            animation: loading 2s infinite;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        .feed-item { animation: slideIn 0.5s ease-out forwards; border-left: 2px solid var(--neon-blue); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .shimmer { background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent); background-size: 200% 100%; animation: loading 2s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
-<body class="min-h-screen antialiased overflow-x-hidden">
+<body class="min-h-screen antialiased overflow-x-hidden pb-20">
 
     <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center relative z-10">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                <img src="logo.png" alt="TPC" class="w-full h-full object-cover onerror='this.style.display=\"none\"'">
-                <span class="header-font font-bold text-black text-xl">T</span>
-            </div>
+            <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg overflow-hidden font-bold text-black text-xl">T</div>
             <span class="header-font text-xl font-bold tracking-tighter uppercase">TempoClaw</span>
         </div>
-        
         <div class="flex items-center gap-4">
             <a href="skill.md" class="text-[10px] tracking-[0.2em] opacity-40 hover:opacity-100 transition uppercase font-semibold">Agent.md</a>
-            <button id="connectBtn" class="bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition">
-                Connect Wallet
-            </button>
+            <button id="connectBtn" class="bg-white/5 border border-white/10 px-6 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition">Connect Wallet</button>
         </div>
     </nav>
 
-    <main class="max-w-xl mx-auto px-4 pt-16 relative z-10">
-        <div class="text-center mb-12">
-            <h2 class="header-font text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">
-                MINT $TPC
-            </h2>
-            <p class="text-[11px] tracking-[0.4em] text-cyan-400 font-medium uppercase mb-2">Protocol: Tempo-4217</p>
-            <p class="text-sm opacity-40 font-light italic">Automated Machine Minting Powered by MPP</p>
-        </div>
-
-        <div class="glass-card p-8 mb-8">
-            
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-1 group">
-                    <span class="text-xs opacity-40 group-hover:text-cyan-400 transition uppercase">Basic</span>
-                    <span class="text-3xl font-bold">1 <span class="text-xs font-light opacity-50">USD</span></span>
-                </div>
-                <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card cursor-pointer p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-1 group opacity-60">
-                    <span class="text-xs opacity-40 group-hover:text-cyan-400 transition uppercase">Pro</span>
-                    <span class="text-3xl font-bold">5 <span class="text-xs font-light opacity-50">USD</span></span>
-                </div>
+    <main class="max-w-6xl mx-auto px-4 pt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+        
+        <div class="lg:col-span-7">
+            <div class="text-center lg:text-left mb-8">
+                <h2 class="header-font text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 uppercase">Mint $TPC</h2>
+                <p class="text-[11px] tracking-[0.4em] text-cyan-400 font-medium uppercase">Protocol: Tempo-4217</p>
             </div>
 
-            <div class="relative mb-8">
-                <input type="number" id="customAmount" placeholder="CUSTOM MINT AMOUNT (MAX 50)" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center outline-none focus:border-cyan-400 transition text-sm font-bold tracking-widest"
-                    oninput="handleCustomInput(this.value)">
-            </div>
+            <div class="glass-card p-8">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div id="pkg1" onclick="selectPkg(1, 'pkg1')" class="package-card pkg-active cursor-pointer p-6 rounded-2xl border border-white/10 text-center transition-all">
+                        <span class="text-xs opacity-40 uppercase block mb-1">Basic</span>
+                        <span class="text-3xl font-bold">1 <span class="text-xs font-light opacity-50">USD</span></span>
+                    </div>
+                    <div id="pkg5" onclick="selectPkg(5, 'pkg5')" class="package-card cursor-pointer p-6 rounded-2xl border border-white/10 text-center transition-all opacity-60">
+                        <span class="text-xs opacity-40 uppercase block mb-1">Pro</span>
+                        <span class="text-3xl font-bold">5 <span class="text-xs font-light opacity-50">USD</span></span>
+                    </div>
+                </div>
 
-            <div class="flex justify-between items-end mb-8 px-2">
-                <div class="text-left">
-                    <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Estimated Return</p>
-                    <p class="header-font text-2xl font-bold text-cyan-400"><span id="tokenReturn">1,000</span> TPC</p>
-                </div>
-                <div class="text-right">
-                    <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Total Cost</p>
-                    <p class="header-font text-2xl font-bold"><span id="displayUSD">1</span> <span class="text-xs opacity-50 uppercase">pathUSD</span></p>
-                </div>
-            </div>
+                <input type="number" id="customAmount" placeholder="CUSTOM MINT AMOUNT (MAX 50)" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center outline-none focus:border-cyan-400 transition text-sm font-bold tracking-widest mb-8">
 
-            <button id="mintBtn" class="btn-neon w-full py-5 rounded-2xl text-[12px] uppercase mb-10 transition-all active:scale-[0.97]">
-                Initialize Transaction
-            </button>
+                <div class="flex justify-between items-end mb-8 px-2">
+                    <div class="text-left">
+                        <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Estimated Return</p>
+                        <p class="header-font text-2xl font-bold text-cyan-400"><span id="tokenReturn">1,000</span> TPC</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[9px] uppercase tracking-widest opacity-30 mb-1">Total Cost</p>
+                        <p class="header-font text-2xl font-bold"><span id="displayUSD">1</span> <span class="text-xs opacity-50 uppercase">pathUSD</span></p>
+                    </div>
+                </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-8">
-                <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
-                    <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Network Distributed</p>
-                    <div id="totalDistributed" class="text-xl font-bold shimmer">Loading...</div>
-                </div>
-                <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
-                    <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Mint Progress</p>
-                    <div id="progressPercent" class="text-xl font-bold text-cyan-400">0%</div>
-                </div>
-            </div>
+                <button id="mintBtn" class="btn-neon w-full py-5 rounded-2xl text-[12px] uppercase mb-10">Initialize Transaction</button>
 
-            <div class="px-1">
-                <div class="flex justify-between text-[9px] uppercase tracking-[0.2em] opacity-30 mb-3">
-                    <span id="remainingText">Scanning Allocation...</span>
-                    <span>Cap: 60M TPC</span>
+                <div class="grid grid-cols-2 gap-3 mb-8">
+                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                        <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Network Distributed</p>
+                        <div id="totalDistributed" class="text-xl font-bold shimmer tracking-tighter">Loading...</div>
+                    </div>
+                    <div class="bg-black/40 border border-white/5 p-4 rounded-2xl">
+                        <p class="text-[8px] uppercase tracking-widest opacity-30 mb-2">Mint Progress</p>
+                        <div id="progressPercent" class="text-xl font-bold text-cyan-400">0%</div>
+                    </div>
                 </div>
+
                 <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                     <div id="progressBar" class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 w-0 transition-all duration-1000"></div>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card p-6 border-cyan-900/20">
-            <div class="flex items-center gap-4">
-                <div class="flex-1">
-                    <h4 class="text-[10px] font-bold uppercase tracking-widest text-cyan-400 mb-1">Agent MPP Gateway</h4>
-                    <p class="text-[10px] opacity-40">Ready for automated wallet-cli minting</p>
+        <div class="lg:col-span-5">
+            <div class="glass-card p-6 h-full flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="header-font text-sm font-bold uppercase tracking-widest text-cyan-400">Live Activity</h3>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="text-[9px] opacity-40 uppercase">Synced</span>
+                    </div>
                 </div>
-                <button onclick="copySkill()" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-[9px] font-bold transition uppercase tracking-tighter">Copy Link</button>
+                
+                <div id="mintFeed" class="flex-1 space-y-3 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                    <div class="text-[10px] opacity-20 text-center py-10 uppercase italic tracking-widest">Waiting for new waves...</div>
+                </div>
             </div>
-            <div id="skillUrl" class="hidden"></div>
-        </div>
-
-        <div id="status" class="mt-8 text-[9px] uppercase tracking-[0.3em] opacity-20 text-center leading-loose">
-            STANDBY FOR AUTHENTICATION
         </div>
     </main>
 
@@ -175,14 +136,14 @@
             abi: [
                 "function mint(uint256 amountInUSD) external",
                 "function approve(address spender, uint256 amount) external returns (bool)",
-                "function totalMinted() external view returns (uint256)"
+                "function totalMinted() external view returns (uint256)",
+                "event Transfer(address indexed from, address indexed to, uint256 value)"
             ],
             mintCap: 60000000
         };
 
         let signer = null;
         let currentAmount = 1;
-        document.getElementById('skillUrl').innerText = window.location.origin + "/skill.md";
 
         async function updateLiveStats() {
             try {
@@ -190,36 +151,59 @@
                 const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
                 const rawMinted = await contract.totalMinted();
                 const minted = Number(ethers.formatEther(rawMinted));
-                const remaining = CONFIG.mintCap - minted;
-                const percent = (minted / CONFIG.mintCap) * 100;
+                const percent = Math.min((minted / CONFIG.mintCap) * 100, 100);
 
                 document.getElementById('totalDistributed').innerText = (minted / 1000000).toFixed(2) + "M TPC";
-                document.getElementById('remainingText').innerText = "AVAIL: " + remaining.toLocaleString() + " TPC";
                 document.getElementById('progressPercent').innerText = percent.toFixed(2) + "%";
                 document.getElementById('progressBar').style.width = percent.toFixed(2) + "%";
             } catch (err) { console.error(err); }
         }
 
-        function selectPkg(num, id) {
-            currentAmount = num;
-            document.querySelectorAll('.package-card').forEach(el => {
-                el.classList.remove('pkg-active');
-                el.classList.add('opacity-60');
+        // Live Feed Logic
+        async function setupEventListeners() {
+            const provider = new ethers.JsonRpcProvider(CONFIG.rpc);
+            const contract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, provider);
+            const feedContainer = document.getElementById('mintFeed');
+
+            // Listen to Transfer events (Minting is a Transfer from address 0)
+            contract.on("Transfer", (from, to, value, event) => {
+                if (from === "0x0000000000000000000000000000000000000000") {
+                    if (feedContainer.innerHTML.includes("Waiting")) feedContainer.innerHTML = '';
+                    
+                    const amount = Number(ethers.formatEther(value)).toLocaleString();
+                    const shortAddr = to.slice(0, 6) + "..." + to.slice(-4);
+                    
+                    const item = document.createElement('div');
+                    item.className = "feed-item bg-white/5 p-3 rounded-r-lg flex justify-between items-center glass-card";
+                    item.innerHTML = `
+                        <div>
+                            <p class="text-[10px] font-bold text-cyan-400">${shortAddr}</p>
+                            <p class="text-[8px] opacity-30 uppercase">Authorized Mint</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[11px] font-bold">+${amount}</p>
+                            <p class="text-[8px] opacity-30 uppercase">TPC</p>
+                        </div>
+                    `;
+                    feedContainer.prepend(item);
+                    if (feedContainer.children.length > 10) feedContainer.lastChild.remove();
+                    updateLiveStats();
+                }
             });
-            const active = document.getElementById(id);
-            active.classList.add('pkg-active');
-            active.classList.remove('opacity-60');
-            document.getElementById('customAmount').value = '';
-            updateNumbers();
         }
 
-        function handleCustomInput(val) {
-            let num = parseInt(val) || 0;
-            if (num > 50) num = 50;
+        function selectPkg(num, id) {
             currentAmount = num;
-            updateNumbers();
-            document.querySelectorAll('.package-card').forEach(el => el.classList.add('opacity-60'));
+            document.querySelectorAll('.package-card').forEach(el => { el.classList.remove('pkg-active'); el.classList.add('opacity-60'); });
+            const active = document.getElementById(id); active.classList.add('pkg-active'); active.classList.remove('opacity-60');
+            document.getElementById('customAmount').value = ''; updateNumbers();
         }
+
+        document.getElementById('customAmount').oninput = function() {
+            let num = parseInt(this.value) || 0; if (num > 50) num = 50;
+            currentAmount = num; updateNumbers();
+            document.querySelectorAll('.package-card').forEach(el => el.classList.add('opacity-60'));
+        };
 
         function updateNumbers() {
             document.getElementById('displayUSD').innerText = currentAmount;
@@ -231,72 +215,31 @@
             const provider = new ethers.BrowserProvider(window.ethereum);
             const accounts = await provider.send("eth_requestAccounts", []);
             signer = await provider.getSigner();
-            const network = await provider.getNetwork();
-            if (Number(network.chainId) !== 4217) {
-                await window.ethereum.request({
-                    method: 'wallet_addEthereumChain',
-                    params: [{
-                        chainId: CONFIG.chainId,
-                        chainName: 'Tempo Mainnet',
-                        nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: 18 },
-                        rpcUrls: [CONFIG.rpc],
-                        blockExplorerUrls: ['https://explore.tempo.xyz/']
-                    }]
-                });
-            }
             document.getElementById('connectBtn').innerText = accounts[0].slice(0,6)+"..."+accounts[0].slice(-4);
-            document.getElementById('status').innerText = "SYSTEM AUTHENTICATED // NETWORK 4217";
+            document.getElementById('status').innerText = "SYSTEM AUTHENTICATED";
         }
 
         async function mint() {
-    if (!signer) return connect();
-    const btn = document.getElementById('mintBtn');
-    const status = document.getElementById('status');
+            if (!signer) return connect();
+            const btn = document.getElementById('mintBtn');
+            try {
+                btn.disabled = true; btn.innerText = "AUTHORIZING...";
+                const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
+                const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
+                const appTx = await pathContract.approve(CONFIG.enshAddr, amount6Decimals);
+                await appTx.wait(1);
 
-    try {
-        btn.disabled = true;
-        btn.innerText = "AUTHORIZING...";
-
-        // PENTING: Menggunakan 6 desimal untuk pathUSD
-        const amount6Decimals = ethers.parseUnits(currentAmount.toString(), 6);
-        
-        const pathContract = new ethers.Contract(CONFIG.pathAddr, CONFIG.abi, signer);
-        
-        // Step 1: Approve (6 Desimal)
-        const appTx = await pathContract.approve(CONFIG.enshAddr, amount6Decimals);
-        status.innerText = "Confirming Approval...";
-        await appTx.wait(1);
-
-        // Step 2: Mint (6 Desimal)
-        btn.innerText = "EXECUTING...";
-        const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
-        
-        const mintTx = await tpcContract.mint(amount6Decimals, {
-            gasLimit: 350000 // Gas limit aman
-        });
-        
-        status.innerText = "Processing Blockchain...";
-        await mintTx.wait(1);
-
-        alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
-        updateLiveStats();
-    } catch (err) {
-        console.error(err);
-        alert("Transaction Failed. Check if you have Gas (TEMPO) and pathUSD.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "INITIALIZE TRANSACTION";
-        status.innerText = "SYSTEM READY";
-    }
-}
-
-        function copySkill() {
-            const url = document.getElementById('skillUrl').innerText;
-            navigator.clipboard.writeText(url);
-            alert("Skill URL Copied.");
+                btn.innerText = "EXECUTING...";
+                const tpcContract = new ethers.Contract(CONFIG.enshAddr, CONFIG.abi, signer);
+                const mintTx = await tpcContract.mint(amount6Decimals, { gasLimit: 350000 });
+                await mintTx.wait(1);
+                alert("SUCCESS: Minted " + (currentAmount * 1000) + " $TPC");
+            } catch (err) { console.error(err); alert("Failed."); }
+            finally { btn.disabled = false; btn.innerText = "INITIALIZE TRANSACTION"; }
         }
 
         updateLiveStats();
+        setupEventListeners();
         setInterval(updateLiveStats, 30000);
         document.getElementById('connectBtn').addEventListener('click', connect);
         document.getElementById('mintBtn').addEventListener('click', mint);
